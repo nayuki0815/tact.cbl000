@@ -2,8 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '../../../lib/supabase/client'
+import AdminLayout from '../../../components/AdminLayout'
+
+const NAVY = '#0d1f3c'
+const GOLD = '#c9a84c'
+const BORDER = 'rgba(201, 168, 76, 0.3)'
+const ROW_BORDER = 'rgba(201, 168, 76, 0.15)'
+const HEADER_BG = '#081423'
+const TEXT_WHITE = '#ffffff'
+const TEXT_MUTED = '#9ab0cc'
 
 type Application = {
   id: string
@@ -26,7 +34,6 @@ type ProfileLite = {
 
 export default function AdminApplicationsPage() {
   const supabase = createClient()
-  const router = useRouter()
   const [apps, setApps] = useState<Application[]>([])
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({})
   const [loading, setLoading] = useState(true)
@@ -34,20 +41,7 @@ export default function AdminApplicationsPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
-
-      // 管理者判定
-      const { data: adminRow } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('email', user.email)
-        .maybeSingle()
-
-      if (!adminRow) { router.replace('/dashboard'); return }
-
-      // 全申込取得（RLS により管理者は全件閲覧可）
+    const fetchData = async () => {
       const { data: appsData, error: appsErr } = await supabase
         .from('applications')
         .select('*')
@@ -62,7 +56,6 @@ export default function AdminApplicationsPage() {
       const applications = (appsData ?? []) as Application[]
       setApps(applications)
 
-      // プロフィール（氏名表示用）を一括取得
       const userIds = Array.from(
         new Set(applications.map(a => a.user_id).filter((v): v is string => !!v))
       )
@@ -80,7 +73,7 @@ export default function AdminApplicationsPage() {
 
       setLoading(false)
     }
-    init()
+    fetchData()
   }, [])
 
   const updateStatus = async (id: string, next: 'approved' | 'rejected') => {
@@ -111,15 +104,21 @@ export default function AdminApplicationsPage() {
   }
 
   const statusBadge = (status: string | null) => {
-    const base = 'inline-block px-2 py-0.5 rounded text-xs font-medium'
+    const base: React.CSSProperties = {
+      display: 'inline-block',
+      padding: '2px 8px',
+      borderRadius: '4px',
+      fontSize: '12px',
+      fontWeight: 500,
+    }
     switch (status) {
       case 'approved':
-        return <span className={`${base} bg-green-100 text-green-800`}>承認済</span>
+        return <span style={{ ...base, backgroundColor: '#dcfce7', color: '#166534' }}>承認済</span>
       case 'rejected':
-        return <span className={`${base} bg-red-100 text-red-800`}>否認</span>
+        return <span style={{ ...base, backgroundColor: '#fee2e2', color: '#991b1b' }}>否認</span>
       case 'pending':
       default:
-        return <span className={`${base} bg-yellow-100 text-yellow-800`}>保留中</span>
+        return <span style={{ ...base, backgroundColor: '#fef3c7', color: '#92400e' }}>保留中</span>
     }
   }
 
@@ -134,76 +133,88 @@ export default function AdminApplicationsPage() {
     }
   }
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-white text-gray-900">
-        <p className="p-8">読み込み中...</p>
-      </div>
-    )
-
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">申込一覧（管理者）</h1>
-          <Link
-            href="/dashboard"
-            className="text-sm text-blue-600 hover:underline"
-          >
-            ← ダッシュボードへ
-          </Link>
-        </div>
+    <AdminLayout>
+      <h1 className="text-2xl font-bold mb-6" style={{ color: TEXT_WHITE }}>
+        申込一覧
+      </h1>
 
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="mb-4 text-sm" style={{ color: '#fca5a5' }}>{error}</p>
+      )}
 
-        {apps.length === 0 ? (
-          <p className="text-gray-500">申込はまだありません</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left px-3 py-2">申込日時</th>
-                  <th className="text-left px-3 py-2">氏名</th>
-                  <th className="text-left px-3 py-2">投資目的</th>
-                  <th className="text-left px-3 py-2">希望サービス</th>
-                  <th className="text-left px-3 py-2">ステータス</th>
-                  <th className="text-left px-3 py-2">操作</th>
+      {loading ? (
+        <p style={{ color: TEXT_MUTED }}>読み込み中...</p>
+      ) : apps.length === 0 ? (
+        <p style={{ color: TEXT_MUTED }}>申込はまだありません</p>
+      ) : (
+        <div
+          className="overflow-x-auto rounded-lg"
+          style={{ backgroundColor: NAVY, border: `1px solid ${BORDER}` }}
+        >
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr style={{ backgroundColor: HEADER_BG, color: GOLD }}>
+                <th className="text-left px-3 py-2 font-semibold">申込日時</th>
+                <th className="text-left px-3 py-2 font-semibold">氏名</th>
+                <th className="text-left px-3 py-2 font-semibold">投資目的</th>
+                <th className="text-left px-3 py-2 font-semibold">希望サービス</th>
+                <th className="text-left px-3 py-2 font-semibold">ステータス</th>
+                <th className="text-left px-3 py-2 font-semibold">操作</th>
+                <th className="text-left px-3 py-2 font-semibold">詳細</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apps.map(a => (
+                <tr
+                  key={a.id}
+                  className="align-top"
+                  style={{ borderTop: `1px solid ${ROW_BORDER}`, color: TEXT_WHITE }}
+                >
+                  <td className="px-3 py-2 whitespace-nowrap" style={{ color: TEXT_MUTED }}>
+                    {formatDate(a.created_at)}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">{fullName(a.user_id)}</td>
+                  <td className="px-3 py-2">{a.investment_purpose ?? '—'}</td>
+                  <td className="px-3 py-2" style={{ color: TEXT_MUTED }}>
+                    {a.desired_services?.join(', ') ?? '—'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">{statusBadge(a.status)}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => updateStatus(a.id, 'approved')}
+                        disabled={updatingId === a.id || a.status === 'approved'}
+                        className="px-3 py-1 rounded text-xs font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: GOLD, color: NAVY }}
+                      >
+                        承認
+                      </button>
+                      <button
+                        onClick={() => updateStatus(a.id, 'rejected')}
+                        disabled={updatingId === a.id || a.status === 'rejected'}
+                        className="px-3 py-1 rounded text-xs font-semibold hover:opacity-80 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ border: `1px solid ${GOLD}`, color: GOLD, backgroundColor: 'transparent' }}
+                      >
+                        否認
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <Link
+                      href={`/admin/applications/${a.id}`}
+                      className="inline-block px-3 py-1 rounded text-xs font-semibold hover:opacity-80 transition"
+                      style={{ border: `1px solid ${GOLD}`, color: GOLD }}
+                    >
+                      詳細・チャット
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {apps.map(a => (
-                  <tr key={a.id} className="border-b align-top">
-                    <td className="px-3 py-2 whitespace-nowrap">{formatDate(a.created_at)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{fullName(a.user_id)}</td>
-                    <td className="px-3 py-2">{a.investment_purpose ?? '—'}</td>
-                    <td className="px-3 py-2">{a.desired_services?.join(', ') ?? '—'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{statusBadge(a.status)}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => updateStatus(a.id, 'approved')}
-                          disabled={updatingId === a.id || a.status === 'approved'}
-                          className="px-3 py-1 rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs"
-                        >
-                          承認
-                        </button>
-                        <button
-                          onClick={() => updateStatus(a.id, 'rejected')}
-                          disabled={updatingId === a.id || a.status === 'rejected'}
-                          className="px-3 py-1 rounded text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs"
-                        >
-                          否認
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </AdminLayout>
   )
 }

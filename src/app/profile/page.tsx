@@ -3,6 +3,22 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../../lib/supabase/client'
+import Header from '../../components/Header'
+
+const PAGE_BG = '#0a1829'
+const CARD_BG = '#0d1f3c'
+const BORDER = 'rgba(201, 168, 76, 0.3)'
+const GOLD = '#c9a84c'
+const NAVY = '#0d1f3c'
+const TEXT_WHITE = '#ffffff'
+const TEXT_MUTED = '#9ab0cc'
+
+const labelStyle = { color: TEXT_WHITE }
+const inputStyle = {
+  backgroundColor: '#ffffff',
+  color: '#0d1f3c',
+  border: '1px solid rgba(201, 168, 76, 0.4)',
+}
 
 type Profile = {
   last_name: string
@@ -98,145 +114,165 @@ export default function ProfilePage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-white text-gray-900">
+      <div className="min-h-screen" style={{ backgroundColor: PAGE_BG, color: TEXT_WHITE }}>
+        <Header />
         <p className="p-8">読み込み中...</p>
       </div>
     )
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: PAGE_BG, color: TEXT_WHITE }}>
+      <Header />
       <div className="max-w-md mx-auto p-8">
-        <h1 className="text-2xl font-bold mb-6">プロフィール</h1>
+        <div
+          className="rounded-lg p-6 sm:p-8"
+          style={{ backgroundColor: CARD_BG, border: `1px solid ${BORDER}` }}
+        >
+          <h1 className="text-2xl font-bold mb-6" style={{ color: TEXT_WHITE }}>プロフィール</h1>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1" style={labelStyle}>姓</label>
+                <input
+                  type="text"
+                  value={profile.last_name}
+                  onChange={e => setProfile({ ...profile, last_name: e.target.value })}
+                  className="w-full rounded px-3 py-2"
+                  style={inputStyle}
+                  placeholder="山田"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1" style={labelStyle}>名</label>
+                <input
+                  type="text"
+                  value={profile.first_name}
+                  onChange={e => setProfile({ ...profile, first_name: e.target.value })}
+                  className="w-full rounded px-3 py-2"
+                  style={inputStyle}
+                  placeholder="太郎"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1" style={labelStyle}>セイ</label>
+                <input
+                  type="text"
+                  value={profile.last_name_kana}
+                  onChange={e => setProfile({ ...profile, last_name_kana: e.target.value })}
+                  className="w-full rounded px-3 py-2"
+                  style={inputStyle}
+                  placeholder="ヤマダ"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1" style={labelStyle}>メイ</label>
+                <input
+                  type="text"
+                  value={profile.first_name_kana}
+                  onChange={e => setProfile({ ...profile, first_name_kana: e.target.value })}
+                  className="w-full rounded px-3 py-2"
+                  style={inputStyle}
+                  placeholder="タロウ"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium mb-1">姓</label>
+              <label className="block text-sm font-medium mb-1" style={labelStyle}>電話番号</label>
               <input
-                type="text"
-                value={profile.last_name}
-                onChange={e => setProfile({ ...profile, last_name: e.target.value })}
-                className="w-full border rounded px-3 py-2"
-                placeholder="山田"
+                type="tel"
+                value={profile.phone}
+                onChange={e => setProfile({ ...profile, phone: e.target.value })}
+                className="w-full rounded px-3 py-2"
+                style={inputStyle}
+                placeholder="090-0000-0000"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium mb-1">名</label>
+              <label className="block text-sm font-medium mb-1" style={labelStyle}>性別</label>
+              <select
+                value={profile.gender}
+                onChange={e => setProfile({ ...profile, gender: e.target.value })}
+                className="w-full rounded px-3 py-2"
+                style={inputStyle}
+              >
+                <option value="">選択してください</option>
+                <option value="男性">男性</option>
+                <option value="女性">女性</option>
+                <option value="その他">その他</option>
+                <option value="回答しない">回答しない</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1" style={labelStyle}>生年月日</label>
               <input
-                type="text"
-                value={profile.first_name}
-                onChange={e => setProfile({ ...profile, first_name: e.target.value })}
-                className="w-full border rounded px-3 py-2"
-                placeholder="太郎"
+                type="date"
+                value={profile.birth_date}
+                onChange={e => setProfile({ ...profile, birth_date: e.target.value })}
+                className="w-full rounded px-3 py-2"
+                style={inputStyle}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">セイ</label>
+              <label className="block text-sm font-medium mb-1" style={labelStyle}>職業</label>
               <input
                 type="text"
-                value={profile.last_name_kana}
-                onChange={e => setProfile({ ...profile, last_name_kana: e.target.value })}
-                className="w-full border rounded px-3 py-2"
-                placeholder="ヤマダ"
+                value={profile.occupation}
+                onChange={e => setProfile({ ...profile, occupation: e.target.value })}
+                className="w-full rounded px-3 py-2"
+                style={inputStyle}
+                placeholder="会社員"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium mb-1">メイ</label>
+              <label className="block text-sm font-medium mb-1" style={labelStyle}>勤続年数 (年)</label>
               <input
-                type="text"
-                value={profile.first_name_kana}
-                onChange={e => setProfile({ ...profile, first_name_kana: e.target.value })}
-                className="w-full border rounded px-3 py-2"
-                placeholder="タロウ"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={profile.years_employed}
+                onChange={e => setProfile({ ...profile, years_employed: e.target.value })}
+                className="w-full rounded px-3 py-2"
+                style={inputStyle}
+                placeholder="5"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">電話番号</label>
-            <input
-              type="tel"
-              value={profile.phone}
-              onChange={e => setProfile({ ...profile, phone: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-              placeholder="090-0000-0000"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" style={labelStyle}>年収 (円)</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={profile.annual_income}
+                onChange={e => setProfile({ ...profile, annual_income: e.target.value })}
+                className="w-full rounded px-3 py-2"
+                style={inputStyle}
+                placeholder="5000000"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">性別</label>
-            <select
-              value={profile.gender}
-              onChange={e => setProfile({ ...profile, gender: e.target.value })}
-              className="w-full border rounded px-3 py-2 bg-white"
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full py-2 rounded font-semibold hover:opacity-90 transition disabled:opacity-50"
+              style={{ backgroundColor: GOLD, color: NAVY }}
             >
-              <option value="">選択してください</option>
-              <option value="男性">男性</option>
-              <option value="女性">女性</option>
-              <option value="その他">その他</option>
-              <option value="回答しない">回答しない</option>
-            </select>
+              {saving ? '保存中...' : '保存する'}
+            </button>
+
+            {message && (
+              <p className="text-center text-sm" style={{ color: TEXT_MUTED }}>{message}</p>
+            )}
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">生年月日</label>
-            <input
-              type="date"
-              value={profile.birth_date}
-              onChange={e => setProfile({ ...profile, birth_date: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">職業</label>
-            <input
-              type="text"
-              value={profile.occupation}
-              onChange={e => setProfile({ ...profile, occupation: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-              placeholder="会社員"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">勤続年数 (年)</label>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              value={profile.years_employed}
-              onChange={e => setProfile({ ...profile, years_employed: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-              placeholder="5"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">年収 (円)</label>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              value={profile.annual_income}
-              onChange={e => setProfile({ ...profile, annual_income: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-              placeholder="5000000"
-            />
-          </div>
-
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {saving ? '保存中...' : '保存する'}
-          </button>
-
-          {message && <p className="text-center text-sm text-green-600">{message}</p>}
         </div>
       </div>
     </div>

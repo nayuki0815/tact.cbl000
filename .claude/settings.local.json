@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(mkdir -p \"C:/project/tact.cbl000/src/app/admin/applications/[id]\")",
+      "Bash(mkdir -p \"C:/project/tact.cbl000/src/app/chat/[applicationId]\")"
+    ]
+  }
+}
