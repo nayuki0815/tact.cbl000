@@ -32,7 +32,6 @@ export default function ApplyPage() {
   const [app, setApp] = useState<Application>(emptyApplication)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -55,7 +54,6 @@ export default function ApplyPage() {
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    setMessage('')
     setError('')
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -77,9 +75,7 @@ export default function ApplyPage() {
       return
     }
 
-    setMessage('申込を送信しました ✓')
-    setApp(emptyApplication)
-    setSubmitting(false)
+    router.push('/complete')
   }
 
   if (loading)
@@ -195,7 +191,6 @@ export default function ApplyPage() {
             {submitting ? '送信中...' : '申込を送信'}
           </button>
 
-          {message && <p className="text-center text-sm text-green-600">{message}</p>}
           {error && <p className="text-center text-sm text-red-600">{error}</p>}
         </div>
       </div>

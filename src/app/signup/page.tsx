@@ -18,16 +18,29 @@ export default function SignupPage() {
     setLoading(true)
     setMessage('')
 
-    const { error } = await supabase.auth.signUp({
+    const response = await supabase.auth.signUp({
       email,
       password,
     })
 
+    console.log('signUp response:', response)
+
+    const { data, error } = response
+
     if (error) {
-      setMessage(error.message)
+      console.error('signUp error object:', error)
+      console.error('signUp error details:', {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        code: (error as { code?: string }).code,
+      })
+      setMessage(`${error.message} (status=${error.status ?? 'n/a'})`)
       setLoading(false)
       return
     }
+
+    console.log('signUp success. user:', data.user, 'session:', data.session)
 
     setMessage('登録できました。次にログインしてください。')
     setLoading(false)
